@@ -13,37 +13,35 @@ assign_booleans([Head1|Tail1], [Head2|Tail2], [Head1-Head2|Tail3]) :-
     assign_booleans(Tail1, Tail2, Tail3).
 
 % Evaluate a postfix boolean expression with variable values.
-eval_postfix(ExpressionList, VarBindings, Result) :-
-    eval_postfix(ExpressionList, VarBindings, [], [Final]),
+eval_postfix(ExpressionList, Result) :-
+    eval_postfix(ExpressionList, [], [Final]),
     Result = Final.
 
 % Base case: stack has one value left (the result)
-eval_postfix([], _, [Result], [Result]).
+eval_postfix([], [Result], [Result]).
 
 % Push variable value onto stack
-eval_postfix([Token|Rest], Vars, Stack, Result) :-
-    member(Token-Val, Vars),
-    eval_postfix(Rest, Vars, [Val|Stack], Result).
+eval_postfix([Token|Rest], Stack, Result) :-
+    assigned_list(Pairs),
+    atom_string(Key, Token),  % convert "A" -> 'A'
+    member(Key-Val, Pairs),
+    write("YOUR MOTHER"), nl,
+    eval_postfix(Rest, [Val|Stack], Result).
 
 % Handle binary OR
-eval_postfix(['+'|Rest], Vars, [V1,V2|Stack], Result) :-
+eval_postfix(["+"|Rest], [V1,V2|Stack], Result) :-
     or_op(V2, V1, R),
-    eval_postfix(Rest, Vars, [R|Stack], Result).
+    eval_postfix(Rest, [R|Stack], Result).
 
 % Handle binary AND
-eval_postfix(['*'|Rest], Vars, [V1,V2|Stack], Result) :-
+eval_postfix(["*"|Rest], [V1,V2|Stack], Result) :-
     and_op(V2, V1, R),
-    eval_postfix(Rest, Vars, [R|Stack], Result).
+    eval_postfix(Rest, [R|Stack], Result).
 
 % Handle unary NOT
-eval_postfix(['-'|Rest], Vars, [V|Stack], Result) :-
+eval_postfix(["-"|Rest], [V|Stack], Result) :-
     not_op(V, R),
-    eval_postfix(Rest, Vars, [R|Stack], Result).
-
-% Define operators
-is_operator('+').
-is_operator('*').
-is_operator('-').
+    eval_postfix(Rest, [R|Stack], Result).
 
 % Boolean logic operations
 or_op('T', _, 'T').
@@ -75,7 +73,7 @@ main :-
     asserta(assigned_list(AssignedList)),
     
     % Process Gates
-    eval_postfix(ThirdLineList, AssignedList, Result),
+    eval_postfix(ThirdLineList, Result),
     
     % Output result
     write(Result), nl.
