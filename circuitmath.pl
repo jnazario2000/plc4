@@ -25,22 +25,26 @@ eval_postfix([Token|Rest], Stack, Result) :-
     assigned_list(Pairs),
     atom_string(Key, Token),  % convert "A" -> 'A'
     member(Key-Val, Pairs),
-    write("YOUR MOTHER"), nl,
     eval_postfix(Rest, [Val|Stack], Result).
 
 % Handle binary OR
 eval_postfix(["+"|Rest], [V1,V2|Stack], Result) :-
-    or_op(V2, V1, R),
+    atom_string(AtomV1, V1),
+    atom_string(AtomV2, V2),
+    or_op(AtomV2, AtomV1, R),
     eval_postfix(Rest, [R|Stack], Result).
 
 % Handle binary AND
 eval_postfix(["*"|Rest], [V1,V2|Stack], Result) :-
-    and_op(V2, V1, R),
+    atom_string(AtomV1, V1),
+    atom_string(AtomV2, V2),
+    and_op(AtomV2, AtomV1, R),
     eval_postfix(Rest, [R|Stack], Result).
 
 % Handle unary NOT
 eval_postfix(["-"|Rest], [V|Stack], Result) :-
-    not_op(V, R),
+	atom_string(AtomV, V),
+    not_op(AtomV, R),
     eval_postfix(Rest, [R|Stack], Result).
 
 % Boolean logic operations
@@ -77,3 +81,4 @@ main :-
     
     % Output result
     write(Result), nl.
+    
