@@ -12,42 +12,42 @@ assign_booleans(_, [], []).
 assign_booleans([Head1|Tail1], [Head2|Tail2], [Head1-Head2|Tail3]) :-
     assign_booleans(Tail1, Tail2, Tail3).
 
-% Evaluate a postfix boolean expression with variable values.
-eval_postfix(ExpressionList, Result) :-
-    eval_postfix(ExpressionList, [], [Final]),
+% Begin the stack operations
+eval_postfix(Circuit, Result) :-
+    eval_postfix(Circuit, [], [Final]),
     Result = Final.
 
-% Base case: stack has one value left (the result)
+% Base case
 eval_postfix([], [Result], [Result]).
 
 % Push variable value onto stack
-eval_postfix([Token|Rest], Stack, Result) :-
+eval_postfix([Letter|Tail], Stack, Result) :-
     assigned_list(Pairs),
-    atom_string(Key, Token),  % convert "A" -> 'A'
-    member(Key-Val, Pairs),
-    eval_postfix(Rest, [Val|Stack], Result).
+    atom_string(AtomLetter, Letter),  % convert "A" -> 'A' so that circuit operations work
+    member(AtomLetter-Val, Pairs),
+    eval_postfix(Tail, [Val|Stack], Result).
 
-% Handle binary OR
-eval_postfix(["+"|Rest], [V1,V2|Stack], Result) :-
+% OR
+eval_postfix(["+"|Tail], [V1,V2|Stack], Result) :-
     atom_string(AtomV1, V1),
     atom_string(AtomV2, V2),
     or_op(AtomV2, AtomV1, R),
-    eval_postfix(Rest, [R|Stack], Result).
+    eval_postfix(Tail, [R|Stack], Result).
 
-% Handle binary AND
-eval_postfix(["*"|Rest], [V1,V2|Stack], Result) :-
+% AND
+eval_postfix(["*"|Tail], [V1,V2|Stack], Result) :-
     atom_string(AtomV1, V1),
     atom_string(AtomV2, V2),
     and_op(AtomV2, AtomV1, R),
-    eval_postfix(Rest, [R|Stack], Result).
+    eval_postfix(Tail, [R|Stack], Result).
 
-% Handle unary NOT
-eval_postfix(["-"|Rest], [V|Stack], Result) :-
+% NOT
+eval_postfix(["-"|Tail], [V|Stack], Result) :-
 	atom_string(AtomV, V),
     not_op(AtomV, R),
-    eval_postfix(Rest, [R|Stack], Result).
+    eval_postfix(Tail, [R|Stack], Result).
 
-% Boolean logic operations
+% Circuit operations
 or_op('T', _, 'T').
 or_op(_, 'T', 'T').
 or_op('F', 'F', 'F').
@@ -66,19 +66,20 @@ main :-
     read_line_to_string(user_input, ThirdLine),
     
     % Convert to string lists
-    split_string(FirstLine, " ", "", _), % First line doesnt matter
+    split_string(FirstLine, " ", "", _), % First line doesn't matter
     split_string(SecondLine, " ", "", SecondLineList),
     split_string(ThirdLine, " ", "", ThirdLineList),
     
     letter_list(Letters),
     
-    % Assign each boolean to its corresponding letter of the alphabet for future use
+    % Assign each boolean to its corresponding letter of the alphabet for future logic
     assign_booleans(Letters, SecondLineList, AssignedList),
     asserta(assigned_list(AssignedList)),
     
-    % Process Gates
+    % Process Circuit
     eval_postfix(ThirdLineList, Result),
     
     % Output result
     write(Result), nl.
+    
     
